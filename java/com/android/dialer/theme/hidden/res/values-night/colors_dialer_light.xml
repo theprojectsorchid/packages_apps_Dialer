@@ -15,9 +15,6 @@
   -->
 <resources>
   <!-- Essential theme colors -->
-  <color name="dialer_theme_color">@*android:color/accent_device_default_light</color>
-  <color name="dialer_theme_color_20pct">@*android:color/accent_device_default_light</color>
-  <color name="dialer_theme_color_dark">@*android:color/accent_device_default_dark</color>
-  <color name="dialer_secondary_color">#F50057</color>
-  <color name="dialer_background_color">@*android:color/primary_dark_device_default_settings</color>
+  <color name="dialer_theme_color">@color/dndndn</color>
+  <color name="dialer_theme_color_dark">@color/dndndn</color>
 </resources>

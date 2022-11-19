@@ -30,15 +30,15 @@
 
   <!-- Call Log -->
   <dimen name="call_log_horizontal_margin">8dp</dimen>
-  <dimen name="call_log_outer_margin">8dp</dimen>
-  <dimen name="call_log_start_margin">8dp</dimen>
+  <dimen name="call_log_outer_margin">16dp</dimen>
+  <dimen name="call_log_start_margin">16dp</dimen>
   <dimen name="call_log_name_margin_bottom">2dp</dimen>
   <dimen name="call_log_call_account_margin_bottom">2dp</dimen>
   <dimen name="call_log_vertical_padding">8dp</dimen>
   <dimen name="call_log_list_item_info_margin_start">16dp</dimen>
 
   <!-- Size of contact photos in the call log and call details. -->
-  <dimen name="contact_photo_size">48dp</dimen>
+  <dimen name="contact_photo_size">39dp</dimen>
 
   <!-- Dimensions for speed dial tiles -->
   <dimen name="contact_tile_divider_width">1dp</dimen>
@@ -46,14 +46,14 @@
   <item name="contact_tile_height_to_width_ratio" type="dimen">76%</item>
   <dimen name="contact_tile_text_side_padding">12dp</dimen>
   <dimen name="contact_tile_text_bottom_padding">9dp</dimen>
-  <dimen name="favorites_row_top_padding">1dp</dimen>
-  <dimen name="favorites_row_start_padding">1dp</dimen>
+  <dimen name="favorites_row_top_padding">8dp</dimen>
+  <dimen name="favorites_row_start_padding">4dp</dimen>
 
   <!-- Padding from the last contact tile will provide the end padding. -->
-  <dimen name="favorites_row_end_padding">0dp</dimen>
+  <dimen name="favorites_row_end_padding">4dp</dimen>
 
   <!-- Size of the star icon on the favorites tile. -->
-  <dimen name="favorites_star_icon_size">12dp</dimen>
+  <dimen name="favorites_star_icon_size">10dp</dimen>
 
   <!-- Margin to the left and right of the search box. -->
   <dimen name="search_margin_horizontal">8dp</dimen>
@@ -72,7 +72,7 @@
   <dimen name="call_log_list_item_primary_action_dimen">48dp</dimen>
 
   <!-- Dimensions for promo cards -->
-  <dimen name="promo_card_icon_size">24dp</dimen>
+  <dimen name="promo_card_icon_size">28dp</dimen>
   <dimen name="promo_card_start_padding">16dp</dimen>
   <dimen name="promo_card_top_padding">21dp</dimen>
   <dimen name="promo_card_main_padding">24dp</dimen>
@@ -91,8 +91,8 @@
   <dimen name="blocked_number_bottom_margin">16dp</dimen>
   <dimen name="blocked_number_add_top_margin">8dp</dimen>
   <dimen name="blocked_number_add_bottom_margin">8dp</dimen>
-  <dimen name="blocked_number_primary_text_size">16sp</dimen>
+  <dimen name="blocked_number_primary_text_size">18sp</dimen>
   <dimen name="blocked_number_delete_icon_size">32dp</dimen>
   <dimen name="blocked_number_search_text_size">14sp</dimen>
-  <dimen name="blocked_number_settings_description_text_size">14sp</dimen>
+  <dimen name="blocked_number_settings_description_text_size">16sp</dimen>
 </resources>

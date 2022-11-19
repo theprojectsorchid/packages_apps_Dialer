@@ -18,14 +18,21 @@ package com.android.dialer.app.calllog;
 
 import static android.Manifest.permission.READ_CALL_LOG;
 
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
+
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.KeyguardManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -68,12 +75,20 @@ import com.android.dialer.metrics.Metrics;
 import com.android.dialer.metrics.MetricsComponent;
 import com.android.dialer.metrics.jank.RecyclerViewJankLogger;
 import com.android.dialer.oem.CequintCallerIdManager;
+//import androidx.core.content.ContextCompat;
+import android.support.v4.content.ContextCompat;
+
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
+import android.text.TextPaint;
+
 import com.android.dialer.performancereport.PerformanceReport;
 import com.android.dialer.phonenumbercache.ContactInfoHelper;
 import com.android.dialer.util.PermissionsUtil;
 import com.android.dialer.widget.EmptyContentView;
 import com.android.dialer.widget.EmptyContentView.OnEmptyViewActionButtonClickedListener;
 import java.util.Arrays;
+import android.provider.CallLog;
 
 /**
  * Displays a list of call log entries. To filter for a particular kind of call (all, missed or
@@ -94,6 +109,7 @@ public class CallLogFragment extends Fragment
   private static final String KEY_HAS_READ_CALL_LOG_PERMISSION = "has_read_call_log_permission";
   private static final String KEY_REFRESH_DATA_REQUIRED = "refresh_data_required";
   private static final String KEY_SELECT_ALL_MODE = "select_all_mode_checked";
+  private static final String TAG = "satyam";
 
   // No limit specified for the number of logs to show; use the CallLogQueryHandler's default.
   private static final int NO_LOG_LIMIT = -1;
@@ -294,9 +310,80 @@ public class CallLogFragment extends Fragment
     setupView(view);
     return view;
   }
+  private String concatCallIds(long[] callIds) {
+      if (callIds == null || callIds.length == 0) {
+        return null;
+      }
+
+      StringBuilder str = new StringBuilder();
+      for (long callId : callIds) {
+        if (str.length() != 0) {
+          str.append(",");
+        }
+        str.append(callId);
+      }
+
+      return str.toString();
+    }
 
   protected void setupView(View view) {
     recyclerView = (RecyclerView) view.findViewById(R.id.recycler_view);
+    ItemTouchHelper.SimpleCallback simpleCallback = new ItemTouchHelper.SimpleCallback(50, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove( RecyclerView recyclerView,   RecyclerView.ViewHolder viewHolder,   RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder holder, int direction) {
+		if (holder instanceof CallLogListItemViewHolder){
+		CallLogListItemViewHolder viewHolder = ((CallLogListItemViewHolder)holder);
+		if (direction == ItemTouchHelper.LEFT){
+		getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms",viewHolder.number, null)));
+ 		adapter.notifyItemChanged(holder.getAdapterPosition());
+		} else {
+		//TODO: Make it thread safe
+			getContext()
+                       .getContentResolver()
+                       .delete(
+	                    CallLog.Calls.CONTENT_URI,
+                            CallLog.Calls._ID + " IN (" + concatCallIds(viewHolder.callIds) + ")" /* where */,
+                            null /* selectionArgs */);
+                  	}
+		  }
+	    }
+
+            @Override
+            public void onChildDraw(Canvas canvas, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+		if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                    if (dX > 0) { // Right swipe
+                        canvas.clipRect(viewHolder.itemView.getLeft(), viewHolder.itemView.getTop(), viewHolder.itemView.getLeft() + (int) dX, viewHolder.itemView.getBottom());
+                            Drawable icon =  getResources().getDrawable(R.drawable.delete);
+                            int iconSize = icon.getIntrinsicHeight();
+                            int halfIcon = iconSize / 2;
+                            int top = viewHolder.itemView.getTop() + ((viewHolder.itemView.getBottom() - viewHolder.itemView.getTop()) / 2 - halfIcon);
+                            icon.setBounds(viewHolder.itemView.getLeft() + 20, top, viewHolder.itemView.getLeft() + 20 + icon.getIntrinsicWidth(), top + icon.getIntrinsicHeight());
+                            icon.draw(canvas);
+                    } else if (dX < 0) { // Left swipe
+                        canvas.clipRect(viewHolder.itemView.getRight() + (int) dX, viewHolder.itemView.getTop(), viewHolder.itemView.getRight(), viewHolder.itemView.getBottom());
+                        Drawable icon =  getResources().getDrawable(R.drawable.sms); //Change icon if needed
+
+                        int iconHorizontalMargin = 20;
+                        int iconSize = icon.getIntrinsicHeight();
+                        int halfIcon = iconSize / 2;
+                        int top = viewHolder.itemView.getTop() + ((viewHolder.itemView.getBottom() - viewHolder.itemView.getTop()) / 2 - halfIcon);
+                        int imgLeft = viewHolder.itemView.getRight() - iconHorizontalMargin - halfIcon * 2;
+                        icon.setBounds(imgLeft, top, viewHolder.itemView.getRight() - iconHorizontalMargin, top + icon.getIntrinsicHeight());
+
+                        icon.draw(canvas);
+                    }
+                }
+                super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
     if (ConfigProviderComponent.get(getContext())
         .getConfigProvider()
         .getBoolean("is_call_log_item_anim_null", false)) {
@@ -310,7 +397,7 @@ public class CallLogFragment extends Fragment
     recyclerView.setLayoutManager(layoutManager);
     PerformanceReport.logOnScrollStateChange(recyclerView);
     emptyListView = (EmptyContentView) view.findViewById(R.id.empty_list_view);
-    emptyListView.setImage(R.drawable.empty_call_log);
+    emptyListView.setImage(R.drawable.oneplus_empty_call_log_illustration);
     emptyListView.setActionClickedListener(this);
     modalAlertView = (ViewGroup) view.findViewById(R.id.modal_message_container);
     modalAlertManager =
